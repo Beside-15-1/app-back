@@ -24,6 +24,8 @@ type AuthUsecase struct {
 	salt         string
 	userModel    user.UserModel
 	settingModel setting.SettingModel
+	kakaoUsecase KakaoUsecase
+	naverUsecae  NaverUsecae
 }
 
 func (u *AuthUsecase) GenerateNewJWTToken(email string) (string, string, error) {
@@ -123,6 +125,18 @@ func (u *AuthUsecase) GetEmailFromJWT(social, idToken string) (string, error) {
 		}
 
 		return "", fmt.Errorf("unable to retrieve user's email")
+	} else if social == "naver" {
+		email, err := u.naverUsecae.GetUserEmailByToken(idToken)
+		if err != nil {
+			return "", err
+		}
+		return email, nil
+	} else if social == "kakao" {
+		email, err := u.kakaoUsecase.UserEmail(idToken)
+		if err != nil {
+			return "", err
+		}
+		return email, nil
 	} else {
 		return "", fmt.Errorf("invalid social name")
 	}
